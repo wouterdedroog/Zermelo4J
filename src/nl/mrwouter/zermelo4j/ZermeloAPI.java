@@ -24,7 +24,7 @@ import nl.mrwouter.zermelo4j.appointments.Appointment;
 import nl.mrwouter.zermelo4j.appointments.AppointmentComparator;
 import nl.mrwouter.zermelo4j.appointments.AppointmentType;
 
-/*
+/**
  * Main class for Zermelo4J
  */
 public class ZermeloAPI {

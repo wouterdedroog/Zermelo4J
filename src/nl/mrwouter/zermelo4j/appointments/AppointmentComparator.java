@@ -3,7 +3,7 @@ package nl.mrwouter.zermelo4j.appointments;
 import java.util.Comparator;
 
 /**
- * Comparator used to make sure that all events are sorted from start to beginning.
+ * Comparator used to make sure that all appointments are sorted from start to beginning.
  *
  */
 public class AppointmentComparator implements Comparator<Appointment> {
