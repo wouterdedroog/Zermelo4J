@@ -32,23 +32,21 @@ public class ZermeloAPI {
 	/**
 	 * Create an instance of the Zermelo API with given school and access token
 	 * 
-	 * @param school
-	 *            code of school, for example apidemo when URL is apidemo.zportal.nl
-	 * @param accessToken
-	 *            Access token for usage with this API.
+	 * @param school      code of school, for example apidemo when URL is
+	 *                    apidemo.zportal.nl
+	 * @param accessToken Access token for usage with this API.
 	 * @return instance of ZermeloAPI
 	 */
 	public static ZermeloAPI getAPI(String school, String accessToken) {
 		return new ZermeloAPI(school, accessToken);
 	}
 
-	/**	
+	/**
 	 * Get a valid access token with given 'Koppel App' code.
 	 * 
-	 * @param school
-	 *            code of school, for example apidemo when URL is apidemo.zportal.nl
-	 * @param authCode
-	 *            Code that can be aquired at the 'Koppel App' page.
+	 * @param school   code of school, for example apidemo when URL is
+	 *                 apidemo.zportal.nl
+	 * @param authCode Code that can be aquired at the 'Koppel App' page.
 	 * @return Valid access token for use with {@link #getAPI}.
 	 * @throws IOException When the schoolname or auth code is not valid.
 	 */
@@ -96,13 +94,101 @@ public class ZermeloAPI {
 		return school;
 	}
 
+	public List<Appointment> getAppointmentParticipations(int year, int weeknumber) {
+		return getAppointmentParticipations("~me", year, weeknumber);
+	}
+
+	// https://echhp.zportal.nl/api/v3/appointmentparticipations?student=~me&week=201938&
+	public List<Appointment> getAppointmentParticipations(String user, int year, int weeknumber) {
+		List<Appointment> appointments = new ArrayList<>();
+
+		try {
+			// Time gets divided by 1000 because it's epoch time in seconds.
+			HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school
+					+ ".zportal.nl/api/v3/appointmentparticipations?student=" + user + "&week=" + year + weeknumber
+					+ "&fields=id,appointmentInstance,studentInDepartment,optional,studentEnrolled,attendanceScheduler,attendanceParticipationCoordinator,plannedAttendance,realizedAttendance,publicComment,start,end,subjects,teachers,locations,groups,schedulerRemark,changeDescription,startTimeSlotName,endTimeSlotName,allowedStudentActions,availableSpace,cancelled,appointmentType,content")
+							.openConnection();
+			con.addRequestProperty("Authorization", "Bearer " + accessToken);
+			con.setRequestMethod("GET");
+
+			InputStream inputStream = null;
+			try {
+				inputStream = con.getInputStream();
+			} catch (IOException exception) {
+				inputStream = con.getErrorStream();
+			}
+
+			InputStreamReader reader = new InputStreamReader(inputStream);
+
+			BufferedReader streamReader = new BufferedReader(reader);
+
+			JsonElement root = new JsonParser().parse(streamReader);
+			JsonObject rootobj = root.getAsJsonObject();
+
+			streamReader.close();
+			reader.close();
+
+			JsonArray data = rootobj.get("response").getAsJsonObject().get("data").getAsJsonArray();
+			for (JsonElement appointmentElement : data) {
+				JsonObject appointmentObj = appointmentElement.getAsJsonObject();
+
+				long id = appointmentObj.get("id").getAsLong();
+				long start = appointmentObj.get("start").getAsLong();
+				long end = appointmentObj.get("end").getAsLong();
+				String startTimeSlot = appointmentObj.get("startTimeSlotName").isJsonNull() ? "?"
+						: appointmentObj.get("startTimeSlotName").getAsString();
+				String endTimeSlot = appointmentObj.get("endTimeSlotName").isJsonNull() ? "?"
+						: appointmentObj.get("endTimeSlotName").getAsString();
+
+				// I can't call #stream() on a JsonArray, so I'll stick with this for now.
+				List<String> subjects = new ArrayList<>();
+				for (JsonElement subject : appointmentObj.get("subjects").getAsJsonArray()) {
+					subjects.add(subject.getAsString());
+				}
+
+				List<String> teachers = new ArrayList<>();
+				for (JsonElement teacher : appointmentObj.get("teachers").getAsJsonArray()) {
+					teachers.add(teacher.getAsString());
+				}
+
+				List<String> groups = new ArrayList<>();
+				for (JsonElement group : appointmentObj.get("groups").getAsJsonArray()) {
+					groups.add(group.getAsString());
+				}
+
+				List<String> locations = new ArrayList<>();
+				for (JsonElement location : appointmentObj.get("locations").getAsJsonArray()) {
+					locations.add(location.getAsString());
+				}
+
+				AppointmentType appointmentType = AppointmentType
+						.getEnum(appointmentObj.get("appointmentType").getAsString());
+
+				// schedulerRemark is 'remark' in the appointments endpoint, this is just a
+				// guess.
+				String remark = appointmentObj.get("schedulerRemark").getAsString();
+
+				boolean cancelled = appointmentObj.get("cancelled").getAsBoolean();
+
+				String changeDescription = appointmentObj.get("changeDescription").getAsString();
+
+				appointments.add(new Appointment(true, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
+						groups, locations, appointmentType, remark, null, cancelled, null, null, null,
+						changeDescription));
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		Collections.sort(appointments, new AppointmentComparator());
+		return appointments;
+	}
+
 	/**
 	 * Get your own list of appointments
 	 * 
-	 * @param startDate
-	 *            date to start looking
-	 * @param endDate
-	 *            date to stop looking
+	 * @param startDate date to start looking
+	 * @param endDate   date to stop looking
 	 * @return List of appointments
 	 */
 	public List<Appointment> getAppointments(Date startDate, Date endDate) {
@@ -112,12 +198,9 @@ public class ZermeloAPI {
 	/**
 	 * Get list of appointments of provided user
 	 * 
-	 * @param user
-	 *            user
-	 * @param startDate
-	 *            date to start looking
-	 * @param endDate
-	 *            date to stop looking
+	 * @param user      user
+	 * @param startDate date to start looking
+	 * @param endDate   date to stop looking
 	 * @return List of appointments
 	 */
 	public List<Appointment> getAppointments(String user, Date startDate, Date endDate) {
@@ -153,10 +236,10 @@ public class ZermeloAPI {
 				long id = appointmentObj.get("id").getAsLong();
 				long start = appointmentObj.get("start").getAsLong();
 				long end = appointmentObj.get("end").getAsLong();
-				int startTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? -1
-						: appointmentObj.get("startTimeSlot").getAsInt();
-				int endTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? -1
-						: appointmentObj.get("endTimeSlot").getAsInt();
+				String startTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? "?"
+						: appointmentObj.get("startTimeSlot").getAsString();
+				String endTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? "?"
+						: appointmentObj.get("endTimeSlot").getAsString();
 
 				// I can't call #stream() on a JsonArray, so I'll stick with this for now.
 				List<String> subjects = new ArrayList<>();
@@ -190,8 +273,8 @@ public class ZermeloAPI {
 
 				String changeDescription = appointmentObj.get("changeDescription").getAsString();
 
-				appointments.add(new Appointment(id, start, end, startTimeSlot, endTimeSlot, subjects, teachers, groups,
-						locations, appointmentType, remark, valid, cancelled, modified, moved, isNew,
+				appointments.add(new Appointment(false, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
+						groups, locations, appointmentType, remark, valid, cancelled, modified, moved, isNew,
 						changeDescription));
 			}
 
@@ -214,8 +297,7 @@ public class ZermeloAPI {
 	/**
 	 * Get a list of visible announcements for provided user
 	 * 
-	 * @param user
-	 *            user
+	 * @param user user
 	 * @return list of visible announcements for provided user
 	 */
 	public List<Announcement> getAnnouncements(String user) {
