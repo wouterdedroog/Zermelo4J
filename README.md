@@ -18,7 +18,7 @@ And this dependency
 <dependency>
    <groupId>nl.mrwouter</groupId>
    <artifactId>Zermelo4J</artifactId>
-   <version>1.3</version>
+   <version>1.4</version>
 </dependency>
 ```
 
