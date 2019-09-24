@@ -2,6 +2,10 @@ package nl.mrwouter.zermelo4j.annoucements;
 
 import java.util.Comparator;
 
+/**
+ * Comparator used to make sure that all announcements are sorted from start to beginning.
+ *
+ */
 public class AnnouncementComparator implements Comparator<Announcement> {
 
 	@Override
