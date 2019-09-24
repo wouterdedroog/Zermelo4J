@@ -1,5 +1,9 @@
 package nl.mrwouter.zermelo4j.appointments;
 
+/**
+ * Exception thrown when using unsupported methods with the appointmentparticipation endpoint
+ *
+ */
 public class AppointmentParticipationException extends Exception {
 
 	// Randomly generated ID.
