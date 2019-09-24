@@ -94,11 +94,25 @@ public class ZermeloAPI {
 		return school;
 	}
 
+	/**
+	 * Get appointments for own user using the appointmentparticipations endpoint
+	 * 
+	 * @param year       year
+	 * @param weeknumber number of week
+	 * @return list of appointments
+	 */
 	public List<Appointment> getAppointmentParticipations(int year, int weeknumber) {
 		return getAppointmentParticipations("~me", year, weeknumber);
 	}
 
-	// https://echhp.zportal.nl/api/v3/appointmentparticipations?student=~me&week=201938&
+	/**
+	 * Get appointments for own user using the appointmentparticipations endpoint
+	 * 
+	 * @param user       user
+	 * @param year       year
+	 * @param weeknumber number of week
+	 * @return list of appointments
+	 */
 	public List<Appointment> getAppointmentParticipations(String user, int year, int weeknumber) {
 		List<Appointment> appointments = new ArrayList<>();
 
