@@ -58,7 +58,7 @@ public class Appointment {
 	}
 
 	/**
-	 * Get the starting timeslot of this appointment
+	 * Get the starting timeslot of this appointment. Returns null when not provided.
 	 * 
 	 * @return start time slot
 	 */
@@ -67,7 +67,7 @@ public class Appointment {
 	}
 
 	/**
-	 * Get the ending timeslot of this appointment
+	 * Get the ending timeslot of this appointment. Returns null when not provided.
 	 * 
 	 * @return end time slot
 	 */

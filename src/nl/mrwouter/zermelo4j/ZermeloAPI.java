@@ -120,7 +120,7 @@ public class ZermeloAPI {
 			// Time gets divided by 1000 because it's epoch time in seconds.
 			HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school
 					+ ".zportal.nl/api/v3/appointmentparticipations?student=" + user + "&week=" + year + weeknumber
-					+ "&fields=id,appointmentInstance,studentInDepartment,optional,studentEnrolled,attendanceScheduler,attendanceParticipationCoordinator,plannedAttendance,realizedAttendance,publicComment,start,end,subjects,teachers,locations,groups,schedulerRemark,changeDescription,startTimeSlotName,endTimeSlotName,allowedStudentActions,availableSpace,cancelled,appointmentType,content")
+					+ "&fields=id,appointmentInstance,studentInDepartment,optional,studentEnrolled,attendanceParticipationCoordinator,plannedAttendance,realizedAttendance,publicComment,start,end,subjects,teachers,locations,groups,schedulerRemark,changeDescription,startTimeSlotName,endTimeSlotName,allowedStudentActions,availableSpace,cancelled,appointmentType,content")
 							.openConnection();
 			con.addRequestProperty("Authorization", "Bearer " + accessToken);
 			con.setRequestMethod("GET");
@@ -149,9 +149,9 @@ public class ZermeloAPI {
 				long id = appointmentObj.get("id").getAsLong();
 				long start = appointmentObj.get("start").getAsLong();
 				long end = appointmentObj.get("end").getAsLong();
-				String startTimeSlot = appointmentObj.get("startTimeSlotName").isJsonNull() ? "?"
+				String startTimeSlot = appointmentObj.get("startTimeSlotName").isJsonNull() ? null
 						: appointmentObj.get("startTimeSlotName").getAsString();
-				String endTimeSlot = appointmentObj.get("endTimeSlotName").isJsonNull() ? "?"
+				String endTimeSlot = appointmentObj.get("endTimeSlotName").isJsonNull() ? null
 						: appointmentObj.get("endTimeSlotName").getAsString();
 
 				// I can't call #stream() on a JsonArray, so I'll stick with this for now.
@@ -250,9 +250,9 @@ public class ZermeloAPI {
 				long id = appointmentObj.get("id").getAsLong();
 				long start = appointmentObj.get("start").getAsLong();
 				long end = appointmentObj.get("end").getAsLong();
-				String startTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? "?"
+				String startTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? null
 						: appointmentObj.get("startTimeSlot").getAsString();
-				String endTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? "?"
+				String endTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? null
 						: appointmentObj.get("endTimeSlot").getAsString();
 
 				// I can't call #stream() on a JsonArray, so I'll stick with this for now.
