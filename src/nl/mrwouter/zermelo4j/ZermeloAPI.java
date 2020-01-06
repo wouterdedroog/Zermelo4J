@@ -116,10 +116,13 @@ public class ZermeloAPI {
 	public List<Appointment> getAppointmentParticipations(String user, int year, int weeknumber) {
 		List<Appointment> appointments = new ArrayList<>();
 
+		// Zermelo requires week format in "<year:4><week:2>"
+		String wkno = String.format("%02d", weeknumber);
+
 		try {
 			// Time gets divided by 1000 because it's epoch time in seconds.
 			HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school
-					+ ".zportal.nl/api/v3/appointmentparticipations?student=" + user + "&week=" + year + weeknumber
+					+ ".zportal.nl/api/v3/appointmentparticipations?student=" + user + "&week=" + year + wkno
 					+ "&fields=id,appointmentInstance,studentInDepartment,optional,studentEnrolled,attendanceParticipationCoordinator,plannedAttendance,realizedAttendance,publicComment,start,end,subjects,teachers,locations,groups,schedulerRemark,changeDescription,startTimeSlotName,endTimeSlotName,allowedStudentActions,availableSpace,cancelled,appointmentType,content")
 							.openConnection();
 			con.addRequestProperty("Authorization", "Bearer " + accessToken);
