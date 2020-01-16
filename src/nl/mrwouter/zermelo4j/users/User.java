@@ -1,8 +1,7 @@
 package nl.mrwouter.zermelo4j.users;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+import jdk.nashorn.internal.objects.annotations.Getter;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -12,90 +11,130 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 public class User {
-    String accessToken;
-    String school;
-    String userCode;
+    private static String accessToken = null;
+    private static String school = null;
+
+    private String userCode;
+    private String firstName;
+    private String lastName;
+    private String prefix;
+    private boolean isArchived;
+    private boolean hasPassword;
+    private boolean isApplicationManager;
+    private boolean isStudent;
+    private boolean isEmployee;
+    private boolean isFamilyMember;
+    private boolean isSchoolScheduler;
+    private boolean isSchoolLeader;
+    private boolean isStudentAdministrator;
+    private boolean isTeamLeader;
+    private boolean isSectionLeader;
+    private boolean isMentor;
+    private boolean isDean;
 
 
-    public User(String school, String accessToken, String userCode) {
-        this.accessToken = accessToken;
-        this.school = school;
-        this.userCode = userCode;
+    public static void setup(String school, String accessToken) {
+        User.accessToken = accessToken;
+        User.school = school;
     }
 
-    public String getFirstName() {
-        return (String) getData("firstName");
-    }
+    public User(String userCode) {
+        if (accessToken == null || school == null)
+            throw new RuntimeException("ZermeloAPI has to be constructed before you can use the User class.");
 
-    public String getLastName() {
-        return (String) getData("lastName");
-    }
-
-    public String getName() {
-        return (String) getData("firstName") + " " + getData("lastName");
+        JsonObject data = getData(userCode);
+        this.userCode               = userCode;
+        this.firstName              = getField(data, "firstName");
+        this.lastName               = getField(data, "lastName");
+        this.prefix                 = getField(data, "prefix");
+        this.isArchived             = data.get("archived").getAsBoolean();
+        this.hasPassword            = data.get("hasPassword").getAsBoolean();
+        this.isApplicationManager   = data.get("isApplicationManager").getAsBoolean();
+        this.isStudent              = data.get("isStudent").getAsBoolean();
+        this.isEmployee             = data.get("isEmployee").getAsBoolean();
+        this.isFamilyMember         = data.get("isFamilyMember").getAsBoolean();
+        this.isSchoolScheduler      = data.get("isSchoolScheduler").getAsBoolean();
+        this.isSchoolLeader         = data.get("isSchoolLeader").getAsBoolean();
+        this.isStudentAdministrator = data.get("isStudentAdministrator").getAsBoolean();
+        this.isTeamLeader           = data.get("isTeamLeader").getAsBoolean();
+        this.isSectionLeader        = data.get("isSectionLeader").getAsBoolean();
+        this.isMentor               = data.get("isMentor").getAsBoolean();
+        this.isDean                 = data.get("isDean").getAsBoolean();
     }
 
     public String getUserCode() {
-        return (String) getData("code");
+        return userCode;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getName() {
+        return firstName + " " + lastName;
     }
 
     public String getPrefix() {
-        return (String) getData("prefix");
-    }
-
-    public boolean isApplicationManager() {
-        return (boolean) getData("isApplicationManager");
+        return prefix;
     }
 
     public boolean isArchived() {
-        return (boolean) getData("archived");
+        return isArchived;
     }
 
-    public boolean hasPassword() {
-        return (boolean) getData("hasPassword");
+    public boolean isHasPassword() {
+        return hasPassword;
+    }
+
+    public boolean isApplicationManager() {
+        return isApplicationManager;
     }
 
     public boolean isStudent() {
-        return (boolean) getData("isStudent");
+        return isStudent;
     }
 
     public boolean isEmployee() {
-        return (boolean) getData("isEmployee");
+        return isEmployee;
     }
 
     public boolean isFamilyMember() {
-        return (boolean) getData("isFamilyMember");
+        return isFamilyMember;
     }
 
     public boolean isSchoolScheduler() {
-        return (boolean) getData("isSchoolScheduler");
+        return isSchoolScheduler;
     }
 
     public boolean isSchoolLeader() {
-        return (boolean) getData("isSchoolLeader");
+        return isSchoolLeader;
     }
 
     public boolean isStudentAdministrator() {
-        return (boolean) getData("isStudentAdministrator");
+        return isStudentAdministrator;
     }
 
     public boolean isTeamLeader() {
-        return (boolean) getData("isTeamLeader");
+        return isTeamLeader;
     }
 
     public boolean isSectionLeader() {
-        return (boolean) getData("isSectionLeader");
+        return isSectionLeader;
     }
 
     public boolean isMentor() {
-        return (boolean) getData("isMentor");
+        return isMentor;
     }
 
     public boolean isDean() {
-        return (boolean) getData("isDean");
+        return isDean;
     }
 
-    private Object getData(String field) {
+    private JsonObject getData(String userCode) {
         try {
             HttpsURLConnection con = (HttpsURLConnection) new URL(
                     "https://" + school + ".zportal.nl/api/v3/users/" + userCode + "?access_token=" + accessToken
@@ -117,11 +156,15 @@ public class User {
 
             streamReader.close();
             reader.close();
-
-            return data.get(0).getAsJsonObject().get(field);
+            return data.get(0).getAsJsonObject();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    private String getField(JsonObject object, String field) {
+        if (object.get(field).isJsonNull()) return null;
+        return object.get(field).getAsString();
     }
 }

@@ -75,6 +75,8 @@ public class ZermeloAPI {
 	public ZermeloAPI(String school, String accessToken) {
 		this.school = school;
 		this.accessToken = accessToken;
+
+		User.setup(school, accessToken);
 	}
 
 	/**
@@ -367,6 +369,16 @@ public class ZermeloAPI {
 	 * @return current user
 	 */
 	public User getUser() {
-		return new User(school, accessToken, "~me");
+		return new User("~me");
+	}
+
+	/**
+	 * Get a user by userCode
+	 *
+	 * @param userCode userCode
+	 * @return current user
+	 */
+	public User getUser(String userCode) {
+		return new User(userCode);
 	}
 }
