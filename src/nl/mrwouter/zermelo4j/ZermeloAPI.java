@@ -23,6 +23,7 @@ import nl.mrwouter.zermelo4j.annoucements.AnnouncementComparator;
 import nl.mrwouter.zermelo4j.appointments.Appointment;
 import nl.mrwouter.zermelo4j.appointments.AppointmentComparator;
 import nl.mrwouter.zermelo4j.appointments.AppointmentType;
+import nl.mrwouter.zermelo4j.users.User;
 
 /**
  * Main class for Zermelo4J
@@ -358,5 +359,14 @@ public class ZermeloAPI {
 		}
 		Collections.sort(announcements, new AnnouncementComparator());
 		return announcements;
+	}
+
+	/**
+	 * Get the current user
+	 *
+	 * @return current user
+	 */
+	public User getUser() {
+		return new User(school, accessToken, "~me");
 	}
 }
