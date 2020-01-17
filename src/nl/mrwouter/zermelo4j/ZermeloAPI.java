@@ -373,10 +373,10 @@ public class ZermeloAPI {
 	/**
 	 * Get a user by userCode
 	 *
-	 * @param userCode userCode
+	 * @param user user
 	 * @return current user
 	 */
-	public User getUser(String userCode) {
-		return new User(school, accessToken, userCode);
+	public User getUser(String user) {
+		return new User(school, accessToken, user);
 	}
 }
