@@ -14,15 +14,15 @@ import java.nio.file.AccessDeniedException;
 public class User {
     private String school, accessToken;
 
-    private String userCode, firstName, lastName, prefix;
+    private String user, firstName, lastName, prefix;
     private boolean isArchived, hasPassword, isApplicationManager, isStudent, isEmployee, isFamilyMember, isSchoolScheduler, isSchoolLeader, isStudentAdministrator, isTeamLeader, isSectionLeader, isMentor, isDean;
 
-    public User(String school, String accessToken, String userCode) {
+    public User(String school, String accessToken, String user) {
         this.school = school;
         this.accessToken = accessToken;
 
-        JsonObject data = getData(userCode);
-        this.userCode = userCode;
+        JsonObject data = getData(user);
+        this.user = user;
         this.firstName = getField(data, "firstName");
         this.lastName = getField(data, "lastName");
         this.prefix = getField(data, "prefix");
@@ -42,12 +42,12 @@ public class User {
     }
 
     /**
-     * Get the code of the user
+     * Get the user identifier
      *
-     * @return code of user
+     * @return identifier of user
      */
-    public String getUserCode() {
-        return userCode;
+    public String getUser() {
+        return user;
     }
 
     /**
@@ -203,10 +203,10 @@ public class User {
         return isDean;
     }
 
-    private JsonObject getData(String userCode) {
+    private JsonObject getData(String user) {
         try {
             HttpsURLConnection con = (HttpsURLConnection) new URL(
-                    "https://" + school + ".zportal.nl/api/v3/users/" + userCode + "?access_token=" + accessToken
+                    "https://" + school + ".zportal.nl/api/v3/users/" + user + "?access_token=" + accessToken
             ).openConnection();
             con.setRequestMethod("GET");
             InputStream inputStream = null;
@@ -222,7 +222,7 @@ public class User {
 
             JsonElement response = (new JsonParser().parse(streamReader)).getAsJsonObject().get("response");
             if (response.getAsJsonObject().get("status").getAsInt() == 403) throw new AccessDeniedException(
-                    "You don't have enough permissions to view user '" + userCode + "' or this user doesn't exist.");
+                    "You don't have enough permissions to view user '" + user + "' or this user doesn't exist.");
 
             JsonArray data = response.getAsJsonObject().get("data").getAsJsonArray();
 
