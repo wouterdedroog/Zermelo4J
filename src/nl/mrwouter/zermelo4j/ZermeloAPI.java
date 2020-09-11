@@ -124,7 +124,7 @@ public class ZermeloAPI {
 			// Time gets divided by 1000 because it's epoch time in seconds.
 			HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school
 					+ ".zportal.nl/api/v3/appointmentparticipations?student=" + user + "&week=" + year + wkno
-					+ "&fields=id,appointmentInstance,studentInDepartment,optional,studentEnrolled,attendanceParticipationCoordinator,plannedAttendance,realizedAttendance,publicComment,start,end,subjects,teachers,locations,groups,schedulerRemark,changeDescription,startTimeSlotName,endTimeSlotName,allowedStudentActions,availableSpace,cancelled,appointmentType,content")
+					+ "&fields=id,start,end,startTimeSlotName,endTimeSlotName,subjects,teachers,groups,locations,appointmentType,schedulerRemark,cancelled,changeDescription")
 							.openConnection();
 			con.addRequestProperty("Authorization", "Bearer " + accessToken);
 			con.setRequestMethod("GET");
