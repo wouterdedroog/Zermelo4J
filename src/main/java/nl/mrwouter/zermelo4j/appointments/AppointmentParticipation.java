@@ -2,7 +2,9 @@ package nl.mrwouter.zermelo4j.appointments;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -24,22 +26,42 @@ public class AppointmentParticipation {
     private final Boolean cancelled;
     private final AppointmentType appointmentType;
 
-    public AppointmentParticipation(long id, long start, long end, String startTimeSlot, String endTimeSlot,
-                       List<String> subjects, List<String> teachers, List<String> groups, List<String> locations,
-                       AppointmentType appointmentType, String remark, Boolean cancelled, String changeDescription) {
-        this.id = id;
-        this.start = start;
-        this.end = end;
-        this.startTimeSlot = startTimeSlot;
-        this.endTimeSlot = endTimeSlot;
-        this.subjects = subjects;
-        this.teachers = teachers;
-        this.groups = groups;
-        this.locations = locations;
-        this.appointmentType = appointmentType;
-        this.remark = remark;
-        this.cancelled = cancelled;
-        this.changeDescription = changeDescription;
+    public AppointmentParticipation(JsonObject appointmentObject) {
+        this.id = appointmentObject.get("id").getAsLong();
+        this.start = appointmentObject.get("start").getAsLong();
+        this.end = appointmentObject.get("end").getAsLong();
+        this.startTimeSlot = appointmentObject.get("startTimeSlotName").isJsonNull()
+                ? null
+                : appointmentObject.get("startTimeSlotName").getAsString();
+        this.endTimeSlot = appointmentObject.get("endTimeSlotName").isJsonNull()
+                ? null
+                : appointmentObject.get("endTimeSlotName").getAsString();
+
+        this.subjects = StreamSupport.stream(appointmentObject.get("subjects").getAsJsonArray().spliterator(), true)
+                .map(JsonElement::getAsString)
+                .collect(Collectors.toList());
+
+        this.teachers = StreamSupport.stream(appointmentObject.get("teachers").getAsJsonArray().spliterator(), true)
+                .map(JsonElement::getAsString)
+                .collect(Collectors.toList());
+
+        this.groups = StreamSupport.stream(appointmentObject.get("groups").getAsJsonArray().spliterator(), true)
+                .map(JsonElement::getAsString)
+                .collect(Collectors.toList());
+
+        this.locations = StreamSupport.stream(appointmentObject.get("locations").getAsJsonArray().spliterator(), true)
+                .map(JsonElement::getAsString)
+                .collect(Collectors.toList());
+
+        if (appointmentObject.has("appointmentType")) {
+            this.appointmentType = AppointmentType.getEnum(appointmentObject.get("appointmentType").getAsString());
+        }else{
+            this.appointmentType = AppointmentType.getEnum(appointmentObject.get("type").getAsString());
+        }
+
+        this.remark = appointmentObject.get("schedulerRemark").getAsString();
+        this.cancelled = appointmentObject.get("cancelled").getAsBoolean();
+        this.changeDescription = appointmentObject.get("changeDescription").getAsString();
     }
 
     /**
@@ -162,6 +184,7 @@ public class AppointmentParticipation {
 
     /**
      * Return this AppointmentParticipation object as a JsonObject
+     *
      * @return JsonObject
      */
     public JsonObject toJson() {
