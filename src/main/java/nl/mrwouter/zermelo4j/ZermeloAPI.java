@@ -26,6 +26,7 @@ import nl.mrwouter.zermelo4j.api.ZermeloApiException;
 import nl.mrwouter.zermelo4j.api.ZermeloHttpClient;
 import nl.mrwouter.zermelo4j.appointments.Appointment;
 import nl.mrwouter.zermelo4j.appointments.AppointmentComparator;
+import nl.mrwouter.zermelo4j.appointments.AppointmentParticipation;
 import nl.mrwouter.zermelo4j.appointments.AppointmentType;
 import nl.mrwouter.zermelo4j.users.User;
 
@@ -136,7 +137,7 @@ public class ZermeloAPI {
      * @param weekNumber number of week
      * @return list of appointments
      */
-    public List<Appointment> getAppointmentParticipations(int year, int weekNumber) throws ZermeloApiException {
+    public List<AppointmentParticipation> getAppointmentParticipations(int year, int weekNumber) throws ZermeloApiException {
         return this.getAppointmentParticipations("~me", year, weekNumber);
     }
 
@@ -149,8 +150,8 @@ public class ZermeloAPI {
      * @return list of appointments
      * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
-    public List<Appointment> getAppointmentParticipations(String user, int year, int weekNumber) throws ZermeloApiException {
-        List<Appointment> appointments = new ArrayList<>();
+    public List<AppointmentParticipation> getAppointmentParticipations(String user, int year, int weekNumber) throws ZermeloApiException {
+        List<AppointmentParticipation> appointments = new ArrayList<>();
 
         // Zermelo requires week format in "<year:4><week:2>"
         String formattedWeekNumber = String.format("%02d", weekNumber);
@@ -199,9 +200,8 @@ public class ZermeloAPI {
             boolean cancelled = appointmentObj.get("cancelled").getAsBoolean();
             String changeDescription = appointmentObj.get("changeDescription").getAsString();
 
-            appointments.add(new Appointment(true, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
-                    groups, locations, appointmentType, remark, null, cancelled, null, null, null,
-                    changeDescription));
+            appointments.add(new AppointmentParticipation(id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
+                    groups, locations, appointmentType, remark, cancelled, changeDescription));
         }
 
         appointments.sort(new AppointmentComparator());
@@ -278,7 +278,7 @@ public class ZermeloAPI {
 
             String changeDescription = appointmentObj.get("changeDescription").getAsString();
 
-            appointments.add(new Appointment(false, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
+            appointments.add(new Appointment(id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
                     groups, locations, appointmentType, remark, valid, cancelled, modified, moved, isNew,
                     changeDescription));
         }
