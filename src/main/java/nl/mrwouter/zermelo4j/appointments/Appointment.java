@@ -3,6 +3,7 @@ package nl.mrwouter.zermelo4j.appointments;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -15,15 +16,12 @@ public class Appointment extends AppointmentParticipation {
     private final boolean moved;
     private final boolean isNew;
 
-    public Appointment(long id, long start, long end, String startTimeSlot, String endTimeSlot,
-                       List<String> subjects, List<String> teachers, List<String> groups, List<String> locations,
-                       AppointmentType appointmentType, String remark, boolean valid, boolean cancelled, boolean modified,
-                       boolean moved, boolean isNew, String changeDescription) {
-        super(id, start, end, startTimeSlot, endTimeSlot, subjects, teachers, groups, locations, appointmentType, remark, cancelled, changeDescription);
-        this.valid = valid;
-        this.modified = modified;
-        this.moved = moved;
-        this.isNew = isNew;
+    public Appointment(JsonObject appointmentObject) {
+        super(appointmentObject);
+        this.valid = appointmentObject.get("valid").getAsBoolean();
+        this.modified = appointmentObject.get("modified").getAsBoolean();
+        this.moved = appointmentObject.get("moved").getAsBoolean();
+        this.isNew = appointmentObject.get("new").getAsBoolean();
     }
 
     /**
