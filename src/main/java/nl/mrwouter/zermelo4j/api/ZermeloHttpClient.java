@@ -9,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -38,14 +39,19 @@ public class ZermeloHttpClient {
 
     public HttpResponse<String> get(String endpoint, String school, String accessToken, Map<String, String> parameters)
             throws ZermeloApiException {
-        parameters.put("access_token", accessToken);
+        try {
+            parameters.put("access_token", accessToken);
+        }catch(UnsupportedOperationException exception) {
+            // Fix errors when ImmutableMap is supplied
+            this.get(endpoint, school, accessToken, new HashMap<>(parameters));
+        }
 
-        String url = this.baseUrl + endpoint + "?" + this.constructQueryParameters(parameters);
+        String url = String.format(this.baseUrl, encode(school)) + endpoint + "?" + this.constructQueryParameters(parameters);
 
         try {
             HttpRequest httpRequest = prepareRequest(accessToken)
                     .GET()
-                    .uri(new URI(String.format(url, encode(school))))
+                    .uri(new URI(url))
                     .build();
 
             return this.dispatchRequest(httpRequest);
@@ -57,12 +63,12 @@ public class ZermeloHttpClient {
 
     public HttpResponse<String> post(String endpoint, String school, String accessToken, Map<String, String> parameters)
             throws ZermeloApiException {
-        String url = this.baseUrl + endpoint + "?" + this.constructQueryParameters(parameters);
+        String url = String.format(this.baseUrl, encode(school)) + endpoint + "?" + this.constructQueryParameters(parameters);
 
         try {
             HttpRequest httpRequest = prepareRequest(accessToken)
                     .POST(HttpRequest.BodyPublishers.noBody())
-                    .uri(new URI(String.format(url, encode(school))))
+                    .uri(new URI(url))
                     .build();
 
             return this.dispatchRequest(httpRequest);

@@ -6,9 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -33,10 +36,45 @@ public class ZermeloAPI {
 
     private final String school;
     private final String accessToken;
+    private final ZermeloHttpClient zermeloHttpClient;
 
-    public ZermeloAPI(String school, String accessToken) {
+    private ZermeloAPI(String school, String accessToken, ZermeloHttpClient zermeloHttpClient) {
         this.school = school;
         this.accessToken = accessToken;
+        this.zermeloHttpClient = zermeloHttpClient;
+    }
+
+    /**
+     * Get a valid access token with given 'Koppel App' code.
+     *
+     * @param school   code of school, for example apidemo when URL is
+     *                 apidemo.zportal.nl
+     * @param authCode Code that can be aquired at the 'Koppel App' page.
+     * @return Valid access token for use with {@link #getAPI}.
+     * @throws ZermeloApiException thrown when authCode is invalid
+     */
+    public static String getAccessToken(String school, String authCode) throws ZermeloApiException {
+        return ZermeloAPI.getAccessToken(school, authCode, new ZermeloHttpClient());
+    }
+
+    /**
+     * Get a valid access token with given 'Koppel App' code.
+     *
+     * @param school            code of school, for example apidemo when URL is
+     *                          apidemo.zportal.nl
+     * @param authCode          Code that can be aquired at the 'Koppel App' page.
+     * @param zermeloHttpClient Zermelo HTTP client
+     * @return Valid access token for use with {@link #getAPI}.
+     * @throws ZermeloApiException thrown when authCode is invalid
+     */
+    public static String getAccessToken(String school, String authCode, ZermeloHttpClient zermeloHttpClient) throws ZermeloApiException {
+        HttpResponse<String> response = zermeloHttpClient.post("/oauth/token", school, "",
+                Map.of("grant_type", "authorization_code", "code", authCode));
+
+        JsonElement root = JsonParser.parseString(response.body());
+        JsonObject rootObject = root.getAsJsonObject();
+
+        return rootObject.get("access_token").getAsString();
     }
 
     /**
@@ -48,26 +86,20 @@ public class ZermeloAPI {
      * @return instance of ZermeloAPI
      */
     public static ZermeloAPI getAPI(String school, String accessToken) {
-        return new ZermeloAPI(school, accessToken);
+        return ZermeloAPI.getAPI(school, accessToken, new ZermeloHttpClient());
     }
 
     /**
-     * Get a valid access token with given 'Koppel App' code.
+     * Create an instance of the Zermelo API with given school and access token
      *
-     * @param school   code of school, for example apidemo when URL is
-     *                 apidemo.zportal.nl
-     * @param authCode Code that can be aquired at the 'Koppel App' page.
-     * @throws ZermeloApiException thrown when authCode is invalid
-     * @return Valid access token for use with {@link #getAPI}.
+     * @param school            code of school, for example apidemo when URL is
+     *                          apidemo.zportal.nl
+     * @param accessToken       Access token for usage with this API.
+     * @param zermeloHttpClient Zermelo HTTP client
+     * @return instance of ZermeloAPI
      */
-    public static String getAccessToken(String school, String authCode) throws ZermeloApiException {
-        HttpResponse<String> response = new ZermeloHttpClient().post("/oauth/token", school, "",
-                Map.of("grant_type", "authorization_code", "code", authCode));
-
-        JsonElement root = JsonParser.parseString(response.body());
-        JsonObject rootObject = root.getAsJsonObject();
-
-        return rootObject.get("access_token").getAsString();
+    public static ZermeloAPI getAPI(String school, String accessToken, ZermeloHttpClient zermeloHttpClient) {
+        return new ZermeloAPI(school, accessToken, zermeloHttpClient);
     }
 
     /**
@@ -76,7 +108,7 @@ public class ZermeloAPI {
      * @return access token
      */
     public String getAccessToken() {
-        return accessToken;
+        return this.accessToken;
     }
 
     /**
@@ -85,18 +117,27 @@ public class ZermeloAPI {
      * @return school code
      */
     public String getSchool() {
-        return school;
+        return this.school;
+    }
+
+    /**
+     * Get the ZermeloHttpClient instance
+     *
+     * @return ZermeloHttpClient instance
+     */
+    public ZermeloHttpClient getZermeloHttpClient() {
+        return this.zermeloHttpClient;
     }
 
     /**
      * Get appointments for own user using the appointmentparticipations endpoint
      *
      * @param year       year
-     * @param weeknumber number of week
+     * @param weekNumber number of week
      * @return list of appointments
      */
-    public List<Appointment> getAppointmentParticipations(int year, int weeknumber) {
-        return getAppointmentParticipations("~me", year, weeknumber);
+    public List<Appointment> getAppointmentParticipations(int year, int weekNumber) throws ZermeloApiException {
+        return this.getAppointmentParticipations("~me", year, weekNumber);
     }
 
     /**
@@ -104,94 +145,66 @@ public class ZermeloAPI {
      *
      * @param user       user
      * @param year       year
-     * @param weeknumber number of week
+     * @param weekNumber number of week
      * @return list of appointments
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
-    public List<Appointment> getAppointmentParticipations(String user, int year, int weeknumber) {
+    public List<Appointment> getAppointmentParticipations(String user, int year, int weekNumber) throws ZermeloApiException {
         List<Appointment> appointments = new ArrayList<>();
 
         // Zermelo requires week format in "<year:4><week:2>"
-        String wkno = String.format("%02d", weeknumber);
+        String formattedWeekNumber = String.format("%02d", weekNumber);
 
-        try {
-            // Time gets divided by 1000 because it's epoch time in seconds.
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school
-                    + ".zportal.nl/api/v3/appointmentparticipations?student=" + user + "&week=" + year + wkno
-                    + "&fields=id,start,end,startTimeSlotName,endTimeSlotName,subjects,teachers,groups,locations,appointmentType,schedulerRemark,cancelled,changeDescription")
-                    .openConnection();
-            con.addRequestProperty("Authorization", "Bearer " + accessToken);
-            con.setRequestMethod("GET");
+        HttpResponse<String> response = this.getZermeloHttpClient().get("/appointmentparticipations", school, this.getAccessToken(),
+                Map.of("student", user, "week", year + formattedWeekNumber, "fields", "id,start,end,startTimeSlotName,endTimeSlotName,subjects,teachers,groups,locations,appointmentType,schedulerRemark,cancelled,changeDescription"));
 
-            InputStream inputStream = null;
-            try {
-                inputStream = con.getInputStream();
-            } catch (IOException exception) {
-                inputStream = con.getErrorStream();
-            }
+        JsonElement root = JsonParser.parseString(response.body());
+        JsonObject rootObject = root.getAsJsonObject();
 
-            InputStreamReader reader = new InputStreamReader(inputStream);
+        JsonArray data = rootObject.get("response").getAsJsonObject()
+                .get("data").getAsJsonArray();
+        for (JsonElement appointmentElement : data) {
+            JsonObject appointmentObj = appointmentElement.getAsJsonObject();
 
-            BufferedReader streamReader = new BufferedReader(reader);
+            long id = appointmentObj.get("id").getAsLong();
+            long start = appointmentObj.get("start").getAsLong();
+            long end = appointmentObj.get("end").getAsLong();
+            String startTimeSlot = appointmentObj.get("startTimeSlotName").isJsonNull()
+                    ? null
+                    : appointmentObj.get("startTimeSlotName").getAsString();
+            String endTimeSlot = appointmentObj.get("endTimeSlotName").isJsonNull()
+                    ? null
+                    : appointmentObj.get("endTimeSlotName").getAsString();
 
-            JsonElement root = new JsonParser().parse(streamReader);
-            JsonObject rootobj = root.getAsJsonObject();
+            List<String> subjects = StreamSupport.stream(appointmentObj.get("subjects").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-            streamReader.close();
-            reader.close();
+            List<String> teachers = StreamSupport.stream(appointmentObj.get("teachers").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-            JsonArray data = rootobj.get("response").getAsJsonObject().get("data").getAsJsonArray();
-            for (JsonElement appointmentElement : data) {
-                JsonObject appointmentObj = appointmentElement.getAsJsonObject();
+            List<String> groups = StreamSupport.stream(appointmentObj.get("groups").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-                long id = appointmentObj.get("id").getAsLong();
-                long start = appointmentObj.get("start").getAsLong();
-                long end = appointmentObj.get("end").getAsLong();
-                String startTimeSlot = appointmentObj.get("startTimeSlotName").isJsonNull() ? null
-                        : appointmentObj.get("startTimeSlotName").getAsString();
-                String endTimeSlot = appointmentObj.get("endTimeSlotName").isJsonNull() ? null
-                        : appointmentObj.get("endTimeSlotName").getAsString();
+            List<String> locations = StreamSupport.stream(appointmentObj.get("locations").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-                // I can't call #stream() on a JsonArray, so I'll stick with this for now.
-                List<String> subjects = new ArrayList<>();
-                for (JsonElement subject : appointmentObj.get("subjects").getAsJsonArray()) {
-                    subjects.add(subject.getAsString());
-                }
+            AppointmentType appointmentType = AppointmentType
+                    .getEnum(appointmentObj.get("appointmentType").getAsString());
 
-                List<String> teachers = new ArrayList<>();
-                for (JsonElement teacher : appointmentObj.get("teachers").getAsJsonArray()) {
-                    teachers.add(teacher.getAsString());
-                }
+            String remark = appointmentObj.get("schedulerRemark").getAsString();
+            boolean cancelled = appointmentObj.get("cancelled").getAsBoolean();
+            String changeDescription = appointmentObj.get("changeDescription").getAsString();
 
-                List<String> groups = new ArrayList<>();
-                for (JsonElement group : appointmentObj.get("groups").getAsJsonArray()) {
-                    groups.add(group.getAsString());
-                }
-
-                List<String> locations = new ArrayList<>();
-                for (JsonElement location : appointmentObj.get("locations").getAsJsonArray()) {
-                    locations.add(location.getAsString());
-                }
-
-                AppointmentType appointmentType = AppointmentType
-                        .getEnum(appointmentObj.get("appointmentType").getAsString());
-
-                // schedulerRemark is 'remark' in the appointments endpoint, this is just a
-                // guess.
-                String remark = appointmentObj.get("schedulerRemark").getAsString();
-
-                boolean cancelled = appointmentObj.get("cancelled").getAsBoolean();
-
-                String changeDescription = appointmentObj.get("changeDescription").getAsString();
-
-                appointments.add(new Appointment(true, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
-                        groups, locations, appointmentType, remark, null, cancelled, null, null, null,
-                        changeDescription));
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            appointments.add(new Appointment(true, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
+                    groups, locations, appointmentType, remark, null, cancelled, null, null, null,
+                    changeDescription));
         }
-        Collections.sort(appointments, new AppointmentComparator());
+
+        appointments.sort(new AppointmentComparator());
         return appointments;
     }
 
@@ -201,9 +214,10 @@ public class ZermeloAPI {
      * @param startDate date to start looking
      * @param endDate   date to stop looking
      * @return List of appointments
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
-    public List<Appointment> getAppointments(Date startDate, Date endDate) {
-        return getAppointments("~me", startDate, endDate);
+    public List<Appointment> getAppointments(Date startDate, Date endDate) throws ZermeloApiException {
+        return this.getAppointments("~me", startDate, endDate);
     }
 
     /**
@@ -213,86 +227,62 @@ public class ZermeloAPI {
      * @param startDate date to start looking
      * @param endDate   date to stop looking
      * @return List of appointments
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
-    public List<Appointment> getAppointments(String user, Date startDate, Date endDate) {
+    public List<Appointment> getAppointments(String user, Date startDate, Date endDate) throws ZermeloApiException {
         List<Appointment> appointments = new ArrayList<>();
 
-        try {
-            // Time gets divided by 1000 because it's epoch time in seconds.
-            HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school
-                    + ".zportal.nl/api/v3/appointments?user=" + user + "&start=" + (startDate.getTime() / 1000)
-                    + "&end=" + (endDate.getTime() / 1000) + "&access_token=" + accessToken).openConnection();
-            con.setRequestMethod("GET");
+        HttpResponse<String> httpResponse = this.getZermeloHttpClient().get("/appointments", school, accessToken,
+                Map.of("user", user,
+                        "start", String.valueOf(startDate.getTime() / 1000),
+                        "end", String.valueOf(endDate.getTime() / 1000)));
+        JsonElement root = JsonParser.parseString(httpResponse.body());
+        JsonObject rootObject = root.getAsJsonObject();
 
-            InputStream inputStream = null;
-            try {
-                inputStream = con.getInputStream();
-            } catch (IOException exception) {
-                inputStream = con.getErrorStream();
-            }
-            InputStreamReader reader = new InputStreamReader(inputStream);
+        JsonArray data = rootObject.get("response").getAsJsonObject().get("data").getAsJsonArray();
+        for (JsonElement appointmentElement : data) {
+            JsonObject appointmentObj = appointmentElement.getAsJsonObject();
 
-            BufferedReader streamReader = new BufferedReader(reader);
+            long id = appointmentObj.get("id").getAsLong();
+            long start = appointmentObj.get("start").getAsLong();
+            long end = appointmentObj.get("end").getAsLong();
+            String startTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? null
+                    : appointmentObj.get("startTimeSlot").getAsString();
+            String endTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? null
+                    : appointmentObj.get("endTimeSlot").getAsString();
 
-            JsonElement root = new JsonParser().parse(streamReader);
-            JsonObject rootobj = root.getAsJsonObject();
+            List<String> subjects = StreamSupport.stream(appointmentObj.get("subjects").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-            streamReader.close();
-            reader.close();
+            List<String> teachers = StreamSupport.stream(appointmentObj.get("teachers").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-            JsonArray data = rootobj.get("response").getAsJsonObject().get("data").getAsJsonArray();
-            for (JsonElement appointmentElement : data) {
-                JsonObject appointmentObj = appointmentElement.getAsJsonObject();
+            List<String> groups = StreamSupport.stream(appointmentObj.get("groups").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-                long id = appointmentObj.get("id").getAsLong();
-                long start = appointmentObj.get("start").getAsLong();
-                long end = appointmentObj.get("end").getAsLong();
-                String startTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? null
-                        : appointmentObj.get("startTimeSlot").getAsString();
-                String endTimeSlot = appointmentObj.get("startTimeSlot").isJsonNull() ? null
-                        : appointmentObj.get("endTimeSlot").getAsString();
+            List<String> locations = StreamSupport.stream(appointmentObj.get("locations").getAsJsonArray().spliterator(), true)
+                    .map(JsonElement::getAsString)
+                    .collect(Collectors.toList());
 
-                // I can't call #stream() on a JsonArray, so I'll stick with this for now.
-                List<String> subjects = new ArrayList<>();
-                for (JsonElement subject : appointmentObj.get("subjects").getAsJsonArray()) {
-                    subjects.add(subject.getAsString());
-                }
+            AppointmentType appointmentType = AppointmentType.getEnum(appointmentObj.get("type").getAsString());
+            String remark = appointmentObj.get("remark").getAsString();
 
-                List<String> teachers = new ArrayList<>();
-                for (JsonElement teacher : appointmentObj.get("teachers").getAsJsonArray()) {
-                    teachers.add(teacher.getAsString());
-                }
+            boolean valid = appointmentObj.get("valid").getAsBoolean();
+            boolean cancelled = appointmentObj.get("cancelled").getAsBoolean();
+            boolean modified = appointmentObj.get("modified").getAsBoolean();
+            boolean moved = appointmentObj.get("moved").getAsBoolean();
+            boolean isNew = appointmentObj.get("new").getAsBoolean();
 
-                List<String> groups = new ArrayList<>();
-                for (JsonElement group : appointmentObj.get("groups").getAsJsonArray()) {
-                    groups.add(group.getAsString());
-                }
+            String changeDescription = appointmentObj.get("changeDescription").getAsString();
 
-                List<String> locations = new ArrayList<>();
-                for (JsonElement location : appointmentObj.get("locations").getAsJsonArray()) {
-                    locations.add(location.getAsString());
-                }
-
-                AppointmentType appointmentType = AppointmentType.getEnum(appointmentObj.get("type").getAsString());
-                String remark = appointmentObj.get("remark").getAsString();
-
-                boolean valid = appointmentObj.get("valid").getAsBoolean();
-                boolean cancelled = appointmentObj.get("cancelled").getAsBoolean();
-                boolean modified = appointmentObj.get("modified").getAsBoolean();
-                boolean moved = appointmentObj.get("moved").getAsBoolean();
-                boolean isNew = appointmentObj.get("new").getAsBoolean();
-
-                String changeDescription = appointmentObj.get("changeDescription").getAsString();
-
-                appointments.add(new Appointment(false, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
-                        groups, locations, appointmentType, remark, valid, cancelled, modified, moved, isNew,
-                        changeDescription));
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            appointments.add(new Appointment(false, id, start, end, startTimeSlot, endTimeSlot, subjects, teachers,
+                    groups, locations, appointmentType, remark, valid, cancelled, modified, moved, isNew,
+                    changeDescription));
         }
-        Collections.sort(appointments, new AppointmentComparator());
+        appointments.sort(new AppointmentComparator());
         return appointments;
     }
 
@@ -300,8 +290,9 @@ public class ZermeloAPI {
      * Get a list of currently visible announcements.
      *
      * @return list of announcements
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
-    public List<Announcement> getAnnouncements() {
+    public List<Announcement> getAnnouncements() throws ZermeloApiException {
         return getAnnouncements("~me");
     }
 
@@ -310,48 +301,26 @@ public class ZermeloAPI {
      *
      * @param user user
      * @return list of visible announcements for provided user
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
-    public List<Announcement> getAnnouncements(String user) {
-        List<Announcement> announcements = new ArrayList<>();
+    public List<Announcement> getAnnouncements(String user) throws ZermeloApiException {
+        HttpResponse<String> httpResponse = this.getZermeloHttpClient().get("/announcements", this.getSchool(), this.getAccessToken(),
+                Map.of("user", user, "current", "true"));
+        JsonElement root = JsonParser.parseString(httpResponse.body());
+        JsonObject rootObject = root.getAsJsonObject();
 
-        try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL(
-                    "https://" + school + ".zportal.nl/api/v3/announcements?user=" + user + "&current=true"
-                            + "&access_token=" + accessToken).openConnection();
-            con.setRequestMethod("GET");
-
-            InputStream inputStream = null;
-            try {
-                inputStream = con.getInputStream();
-            } catch (IOException exception) {
-                inputStream = con.getErrorStream();
-            }
-            InputStreamReader reader = new InputStreamReader(inputStream);
-
-            BufferedReader streamReader = new BufferedReader(reader);
-
-            JsonElement root = new JsonParser().parse(streamReader);
-            JsonObject rootobj = root.getAsJsonObject();
-
-            streamReader.close();
-            reader.close();
-
-            JsonArray data = rootobj.get("response").getAsJsonObject().get("data").getAsJsonArray();
-            for (JsonElement announcementElement : data) {
-                JsonObject announcementObj = announcementElement.getAsJsonObject();
-                long id = announcementObj.get("id").getAsLong();
-                long start = announcementObj.get("start").getAsLong();
-                long end = announcementObj.get("end").getAsLong();
-                String title = announcementObj.get("title").getAsString();
-                String text = announcementObj.get("text").getAsString();
-                announcements.add(new Announcement(id, start, end, title, text));
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        Collections.sort(announcements, new AnnouncementComparator());
-        return announcements;
+        JsonArray data = rootObject.get("response").getAsJsonObject().get("data").getAsJsonArray();
+        return StreamSupport.stream(data.spliterator(), true).map(announcementElement -> {
+                    JsonObject announcementObj = announcementElement.getAsJsonObject();
+                    long id = announcementObj.get("id").getAsLong();
+                    long start = announcementObj.get("start").getAsLong();
+                    long end = announcementObj.get("end").getAsLong();
+                    String title = announcementObj.get("title").getAsString();
+                    String text = announcementObj.get("text").getAsString();
+                    return new Announcement(id, start, end, title, text);
+                })
+                .sorted(new AnnouncementComparator())
+                .collect(Collectors.toList());
     }
 
     /**
