@@ -1,6 +1,7 @@
 package nl.mrwouter.zermelo4j.appointments;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonObject;
 
@@ -228,7 +229,7 @@ public class Appointment {
     }
 
     /**
-     * Added custom {@link #toString()} method because easy debugging.
+     * Added custom #toString() method for easy debugging.
      */
     @Override
     public String toString() {
@@ -239,17 +240,17 @@ public class Appointment {
         appointment.addProperty("startTimeSlot", startTimeSlot);
 
         appointment.addProperty("endTimeSlot", endTimeSlot);
-        appointment.addProperty("teachers", teachers.toString().replace("[", "").replace("]", ""));
-        appointment.addProperty("subjects", subjects.toString().replace("[", "").replace("]", ""));
-        appointment.addProperty("groups", groups.toString().replace("[", "").replace("]", ""));
-        appointment.addProperty("locations", locations.toString().replace("[", "").replace("]", ""));
-        appointment.addProperty("appointmentType", appointmentType.toString().replace("[", "").replace("]", ""));
+        appointment.addProperty("teachers", String.join(",", teachers));
+        appointment.addProperty("subjects", String.join(",", subjects));
+        appointment.addProperty("groups", String.join(",", groups));
+        appointment.addProperty("locations", String.join(",", locations));
+        appointment.addProperty("appointmentType", appointmentType.name());
         appointment.addProperty("remark", remark);
-        appointment.addProperty("valid", (isParticipation ? "?" : "" + valid));
+        appointment.addProperty("valid", (!isParticipation ? valid : null));
         appointment.addProperty("cancelled", cancelled);
-        appointment.addProperty("modified", (isParticipation ? "?" : "" + modified));
-        appointment.addProperty("moved", (isParticipation ? "?" : "" + moved));
-        appointment.addProperty("new", (isParticipation ? "?" : "" + isNew));
+        appointment.addProperty("modified", (!isParticipation ? modified : null));
+        appointment.addProperty("moved", (!isParticipation ? moved : null));
+        appointment.addProperty("new", (!isParticipation ? isNew : null));
         appointment.addProperty("changeDescription", changeDescription);
 
         return appointment.toString();
