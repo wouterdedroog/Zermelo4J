@@ -1,15 +1,14 @@
 package nl.mrwouter.zermelo4j;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.net.http.HttpResponse;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -20,6 +19,8 @@ import com.google.gson.JsonParser;
 
 import nl.mrwouter.zermelo4j.annoucements.Announcement;
 import nl.mrwouter.zermelo4j.annoucements.AnnouncementComparator;
+import nl.mrwouter.zermelo4j.api.ZermeloApiException;
+import nl.mrwouter.zermelo4j.api.ZermeloHttpClient;
 import nl.mrwouter.zermelo4j.appointments.Appointment;
 import nl.mrwouter.zermelo4j.appointments.AppointmentComparator;
 import nl.mrwouter.zermelo4j.appointments.AppointmentType;
@@ -56,26 +57,17 @@ public class ZermeloAPI {
      * @param school   code of school, for example apidemo when URL is
      *                 apidemo.zportal.nl
      * @param authCode Code that can be aquired at the 'Koppel App' page.
+     * @throws ZermeloApiException thrown when authCode is invalid
      * @return Valid access token for use with {@link #getAPI}.
-     * @throws IOException When the schoolname or auth code is not valid.
      */
-    public static String getAccessToken(String school, String authCode) throws IOException {
-        HttpsURLConnection con = (HttpsURLConnection) new URL("https://" + school + ".zportal.nl/api/v3/oauth/token")
-                .openConnection();
-        con.setRequestMethod("POST");
-        con.setDoOutput(true);
-        con.setDoInput(true);
+    public static String getAccessToken(String school, String authCode) throws ZermeloApiException {
+        HttpResponse<String> response = new ZermeloHttpClient().post("/oauth/token", school, "",
+                Map.of("grant_type", "authorization_code", "code", authCode));
 
-        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-        wr.writeBytes("grant_type=authorization_code&code=" + authCode);
-        wr.close();
+        JsonElement root = JsonParser.parseString(response.body());
+        JsonObject rootObject = root.getAsJsonObject();
 
-        InputStreamReader reader = new InputStreamReader((InputStream) con.getContent());
-        JsonElement root = new JsonParser().parse(reader);
-        JsonObject rootobj = root.getAsJsonObject();
-        reader.close();
-
-        return rootobj.get("access_token").getAsString();
+        return rootObject.get("access_token").getAsString();
     }
 
     /**
