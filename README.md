@@ -4,42 +4,49 @@ A simple Java API Wrapper for the Zermelo API
 ## Documentation
 https://docs.mrwouter.nl/zermelo4j/
 
-
 ## Using Zermelo4J with Maven.
 Add this repository
-```
+```xml
 <repository>
    <id>mrwouter-repo</id>
    <url>https://repo.mrwouter.nl</url>
 </repository> 
 ```
 And this dependency
-```
+```xml
 <dependency>
    <groupId>nl.mrwouter</groupId>
    <artifactId>Zermelo4J</artifactId>
-   <version>1.5</version>
+   <version>2.0</version>
 </dependency>
 ```
 
-
 ## Example
-```
-	public static void main(String args[]) {
-		// Access token can be created by using ZermeloAPI#getAccessToken("[school]", "[koppel app code]");
-		ZermeloAPI api = ZermeloAPI.getAPI("[school]", "[AccessToken]");
-		System.out.println(api.getAccessToken());
-		Date endDate = new Date();
-		endDate.setTime(endDate.getTime() - 432000000l);
-		
-		for (Appointment app: api.getAppointments(endDate, new Date())) {
-			System.out.println(app.toString());
-		}
-		for (Announcement ann: api.getAnnouncements()) {
-			System.out.println(ann.toString());
-		}
-	}
+
+```java
+import nl.mrwouter.zermelo4j.ZermeloAPI;
+
+class ZermeloTest {
+
+    public static void main(String[] args) {
+        // Access token can be created by using ZermeloAPI#getAccessToken("[school]", "[koppel app code]");
+        ZermeloAPI api = ZermeloAPI.getAPI("[school]", "[AccessToken]");
+        System.out.println(api.getAccessToken());
+        Date endDate = new Date();
+        endDate.setTime(endDate.getTime() - 432000000L);
+
+        try {
+            api.getAppointments(endDate, new Date())
+                    .forEach(appointment -> System.out.println(appointment.toString()));
+
+            api.getAnnouncements()
+                    .forEach(announcement -> System.out.println(announcement.toString()));
+        } catch (ZermeloApiException exception) {
+            exception.printStackTrace();
+        }
+    }
+}
 ```
 
 ## Disclaimer
-This project is not created by nor associated in any way with Zermelo Software BV.
+This project is not created by nor associated in any way with Zermelo Software B.V.
