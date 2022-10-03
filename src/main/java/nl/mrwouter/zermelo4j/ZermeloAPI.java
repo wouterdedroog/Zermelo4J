@@ -1,20 +1,9 @@
 package nl.mrwouter.zermelo4j;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.nio.file.AccessDeniedException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -28,7 +17,6 @@ import nl.mrwouter.zermelo4j.api.ZermeloHttpClient;
 import nl.mrwouter.zermelo4j.appointments.Appointment;
 import nl.mrwouter.zermelo4j.appointments.AppointmentComparator;
 import nl.mrwouter.zermelo4j.appointments.AppointmentParticipation;
-import nl.mrwouter.zermelo4j.appointments.AppointmentType;
 import nl.mrwouter.zermelo4j.users.User;
 
 /**
