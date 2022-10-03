@@ -6,7 +6,34 @@ import java.util.Arrays;
  * The appointment types for {@link Appointment#getType()}
  */
 public enum AppointmentType {
-    ACTIVITY, CHOICE, EXAM, MEETING, LESSON, OTHER, TALK;
+    /**
+     * AppointmentType ACTIVITY as returned from the Zermelo API.
+     */
+    ACTIVITY,
+    /**
+     * AppointmentType CHOICE as returned from the Zermelo API.
+     */
+    CHOICE,
+    /**
+     * AppointmentType EXAM as returned from the Zermelo API.
+     */
+    EXAM,
+    /**
+     * AppointmentType MEETING as returned from the Zermelo API.
+     */
+    MEETING,
+    /**
+     * AppointmentType LESSON as returned from the Zermelo API.
+     */
+    LESSON,
+    /**
+     * AppointmentType OTHER as returned from the Zermelo API.
+     */
+    OTHER,
+    /**
+     * AppointmentType TALK as returned from the Zermelo API.
+     */
+    TALK;
 
     /**
      * Get appointment type for given String (case insensitive)
