@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.mrwouter</groupId>
     <artifactId>Zermelo4J</artifactId>
-    <version>1.5</version>
+    <version>2.0</version>
     <name>Zermelo4J</name>
     <build>
         <plugins>
