@@ -1,5 +1,6 @@
 package nl.mrwouter.zermelo4j.appointments;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -26,6 +27,10 @@ public class AppointmentParticipation {
     private final Boolean cancelled;
     private final AppointmentType appointmentType;
 
+    /**
+     * Create an AppointmentParticipation from a provided JsonObject
+     * @param appointmentObject JSON data as returned from the Zermelo API. See {@link nl.mrwouter.zermelo4j.ZermeloAPI#getAppointmentParticipations(int, int)}
+     */
     public AppointmentParticipation(JsonObject appointmentObject) {
         this.id = appointmentObject.get("id").getAsLong();
         this.start = appointmentObject.get("start").getAsLong();

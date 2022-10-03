@@ -1,5 +1,8 @@
 package nl.mrwouter.zermelo4j.users;
 
+/**
+ * User object
+ */
 public class User {
 
     private final String user;
@@ -20,6 +23,26 @@ public class User {
     private final boolean isMentor;
     private final boolean isDean;
 
+    /**
+     * Create a user object
+     * @param user (username or ~me)
+     * @param firstName first name
+     * @param lastName last name
+     * @param prefix prefix
+     * @param isArchived true if user is archived
+     * @param hasPassword true if user has a password
+     * @param isApplicationManager true if user is an application manager
+     * @param isStudent true if user is a student
+     * @param isEmployee true if user is an employee
+     * @param isFamilyMember true if user is a family member
+     * @param isSchoolScheduler true if user is a school scheduler
+     * @param isSchoolLeader true if user is a school leader
+     * @param isStudentAdministrator true if user is a student administrator
+     * @param isTeamLeader true if user is a team leader
+     * @param isSectionLeader true if user is a section leader
+     * @param isMentor true if user is a mentor
+     * @param isDean true if user is a dean
+     */
     public User(String user, String firstName, String lastName, String prefix, boolean isArchived, boolean hasPassword,
                 boolean isApplicationManager, boolean isStudent, boolean isEmployee, boolean isFamilyMember,
                 boolean isSchoolScheduler, boolean isSchoolLeader, boolean isStudentAdministrator, boolean isTeamLeader,

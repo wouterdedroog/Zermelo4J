@@ -137,6 +137,7 @@ public class ZermeloAPI {
      * @param year       year
      * @param weekNumber number of week
      * @return list of appointments
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
     public List<AppointmentParticipation> getAppointmentParticipations(int year, int weekNumber) throws ZermeloApiException {
         return this.getAppointmentParticipations("~me", year, weekNumber);
@@ -244,8 +245,8 @@ public class ZermeloAPI {
     /**
      * Get the current user
      *
-     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      * @return current user
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
     public User getUser() throws ZermeloApiException {
         return this.getUser("~me");
@@ -255,8 +256,8 @@ public class ZermeloAPI {
      * Get a user by userCode
      *
      * @param user user
-     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      * @return current user
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      */
     public User getUser(String user) throws ZermeloApiException {
         HttpResponse<String> httpResponse = this.getZermeloHttpClient().get("/users/" + user, this.getSchool(), this.getAccessToken(), Collections.emptyMap());

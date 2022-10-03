@@ -13,6 +13,14 @@ public class Announcement {
     private final String title;
     private final String text;
 
+    /**
+     * Create an announcement object
+     * @param id id of the announcement
+     * @param start start of the announcement (in seconds since epoch)
+     * @param end end of the announcement (in seconds since epoch)
+     * @param title title of the announcement
+     * @param text body of the announcement
+     */
     public Announcement(long id, long start, long end, String title, String text) {
         this.id = id;
         this.start = start;

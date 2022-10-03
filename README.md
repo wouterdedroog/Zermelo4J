@@ -21,7 +21,6 @@ And this dependency
 </dependency>
 ```
 
-
 ## Example
 
 ```java

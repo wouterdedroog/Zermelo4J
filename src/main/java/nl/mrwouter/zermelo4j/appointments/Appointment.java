@@ -1,5 +1,6 @@
 package nl.mrwouter.zermelo4j.appointments;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,10 @@ public class Appointment extends AppointmentParticipation {
     private final boolean moved;
     private final boolean isNew;
 
+    /**
+     * Create an Appointment from a provided JsonObject
+     * @param appointmentObject JSON data as returned from the Zermelo API. See {@link nl.mrwouter.zermelo4j.ZermeloAPI#getAppointments(Date, Date)}
+     */
     public Appointment(JsonObject appointmentObject) {
         super(appointmentObject);
         this.valid = appointmentObject.get("valid").getAsBoolean();

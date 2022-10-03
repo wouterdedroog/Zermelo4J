@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Class for managing requests to the Zermelo API
+ */
 public class ZermeloHttpClient {
 
     private final String baseUrl;
@@ -37,6 +40,15 @@ public class ZermeloHttpClient {
         this.httpClient = httpClient;
     }
 
+    /**
+     * Make a GET request to the Zermelo API
+     * @param endpoint API endpoint (i.e. /appointments)
+     * @param school subdomain used for the current school
+     * @param accessToken access token as retrieved from {@link nl.mrwouter.zermelo4j.ZermeloAPI#getAccessToken(String, String)}
+     * @param parameters route parameters
+     * @return HttpResponse containing the body as a string
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
+     */
     public HttpResponse<String> get(String endpoint, String school, String accessToken, Map<String, String> parameters)
             throws ZermeloApiException {
         try {
@@ -61,6 +73,15 @@ public class ZermeloHttpClient {
         }
     }
 
+    /**
+     * Make a POST request to the Zermelo API
+     * @param endpoint API endpoint (i.e. /appointments)
+     * @param school subdomain used for the current school
+     * @param accessToken access token as retrieved from {@link nl.mrwouter.zermelo4j.ZermeloAPI#getAccessToken(String, String)}
+     * @param parameters route parameters
+     * @return HttpResponse containing the body as a string
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
+     */
     public HttpResponse<String> post(String endpoint, String school, String accessToken, Map<String, String> parameters)
             throws ZermeloApiException {
         String url = String.format(this.baseUrl, encode(school)) + endpoint + "?" + this.constructQueryParameters(parameters);
