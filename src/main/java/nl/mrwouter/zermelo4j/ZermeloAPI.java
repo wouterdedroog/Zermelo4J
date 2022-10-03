@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -243,19 +244,41 @@ public class ZermeloAPI {
     /**
      * Get the current user
      *
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      * @return current user
      */
-    public User getUser() {
-        return new User(school, accessToken, "~me");
+    public User getUser() throws ZermeloApiException {
+        return this.getUser("~me");
     }
 
     /**
      * Get a user by userCode
      *
      * @param user user
+     * @throws ZermeloApiException thrown when Zermelo returns a non-successful status code
      * @return current user
      */
-    public User getUser(String user) {
-        return new User(school, accessToken, user);
+    public User getUser(String user) throws ZermeloApiException {
+        HttpResponse<String> httpResponse = this.getZermeloHttpClient().get("/users/" + user, this.getSchool(), this.getAccessToken(), Collections.emptyMap());
+        JsonElement root = JsonParser.parseString(httpResponse.body());
+        System.out.println(root);
+        JsonObject responseObject = root.getAsJsonObject().get("response").getAsJsonObject();
+        JsonObject data = responseObject.get("data").getAsJsonArray().get(0).getAsJsonObject();
+
+        String firstName = !data.get("firstName").isJsonNull()
+                ? data.get("firstName").getAsString()
+                : null;
+        String lastName = !data.get("lastName").isJsonNull()
+                ? data.get("lastName").getAsString()
+                : null;
+        String prefix = !data.get("prefix").isJsonNull()
+                ? data.get("prefix").getAsString()
+                : null;
+
+        return new User(user, firstName, lastName, prefix, data.get("archived").getAsBoolean(), data.get("hasPassword").getAsBoolean(),
+                data.get("isApplicationManager").getAsBoolean(), data.get("isStudent").getAsBoolean(), data.get("isEmployee").getAsBoolean(),
+                data.get("isFamilyMember").getAsBoolean(), data.get("isSchoolScheduler").getAsBoolean(), data.get("isSchoolLeader").getAsBoolean(),
+                data.get("isStudentAdministrator").getAsBoolean(), data.get("isTeamLeader").getAsBoolean(), data.get("isSectionLeader").getAsBoolean(),
+                data.get("isMentor").getAsBoolean(), data.get("isDean").getAsBoolean());
     }
 }
