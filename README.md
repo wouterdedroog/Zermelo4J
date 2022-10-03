@@ -6,14 +6,14 @@ https://docs.mrwouter.nl/zermelo4j/
 
 ## Using Zermelo4J with Maven.
 Add this repository
-```
+```xml
 <repository>
    <id>mrwouter-repo</id>
    <url>https://repo.mrwouter.nl</url>
 </repository> 
 ```
 And this dependency
-```
+```xml
 <dependency>
    <groupId>nl.mrwouter</groupId>
    <artifactId>Zermelo4J</artifactId>
