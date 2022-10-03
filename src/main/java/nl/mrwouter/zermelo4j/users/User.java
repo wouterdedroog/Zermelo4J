@@ -1,22 +1,6 @@
 package nl.mrwouter.zermelo4j.users;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.file.AccessDeniedException;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 public class User {
-    private final String school;
-    private final String accessToken;
 
     private final String user;
     private final String firstName;
@@ -36,30 +20,28 @@ public class User {
     private final boolean isMentor;
     private final boolean isDean;
 
-    public User(String school, String accessToken, String user) {
-        this.school = school;
-        this.accessToken = accessToken;
-
-        JsonObject data = getData(user);
+    public User(String user, String firstName, String lastName, String prefix, boolean isArchived, boolean hasPassword,
+                boolean isApplicationManager, boolean isStudent, boolean isEmployee, boolean isFamilyMember,
+                boolean isSchoolScheduler, boolean isSchoolLeader, boolean isStudentAdministrator, boolean isTeamLeader,
+                boolean isSectionLeader, boolean isMentor, boolean isDean) {
         this.user = user;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.prefix = prefix;
 
-        this.firstName = getField(data, "firstName");
-        this.lastName = getField(data, "lastName");
-        this.prefix = getField(data, "prefix");
-
-        this.isArchived = data.get("archived").getAsBoolean();
-        this.hasPassword = data.get("hasPassword").getAsBoolean();
-        this.isApplicationManager = data.get("isApplicationManager").getAsBoolean();
-        this.isStudent = data.get("isStudent").getAsBoolean();
-        this.isEmployee = data.get("isEmployee").getAsBoolean();
-        this.isFamilyMember = data.get("isFamilyMember").getAsBoolean();
-        this.isSchoolScheduler = data.get("isSchoolScheduler").getAsBoolean();
-        this.isSchoolLeader = data.get("isSchoolLeader").getAsBoolean();
-        this.isStudentAdministrator = data.get("isStudentAdministrator").getAsBoolean();
-        this.isTeamLeader = data.get("isTeamLeader").getAsBoolean();
-        this.isSectionLeader = data.get("isSectionLeader").getAsBoolean();
-        this.isMentor = data.get("isMentor").getAsBoolean();
-        this.isDean = data.get("isDean").getAsBoolean();
+        this.isArchived = isArchived;
+        this.hasPassword = hasPassword;
+        this.isApplicationManager = isApplicationManager;
+        this.isStudent = isStudent;
+        this.isEmployee = isEmployee;
+        this.isFamilyMember = isFamilyMember;
+        this.isSchoolScheduler = isSchoolScheduler;
+        this.isSchoolLeader = isSchoolLeader;
+        this.isStudentAdministrator = isStudentAdministrator;
+        this.isTeamLeader = isTeamLeader;
+        this.isSectionLeader = isSectionLeader;
+        this.isMentor = isMentor;
+        this.isDean = isDean;
     }
 
     /**
@@ -213,44 +195,5 @@ public class User {
      */
     public boolean isDean() {
         return isDean;
-    }
-
-    private JsonObject getData(String user) {
-        try {
-            HttpsURLConnection con = (HttpsURLConnection) new URL(
-                    "https://" + school + ".zportal.nl/api/v3/users/" + user + "?access_token=" + accessToken)
-                    .openConnection();
-            con.setRequestMethod("GET");
-            InputStream inputStream = null;
-
-            try {
-                inputStream = con.getInputStream();
-            } catch (IOException exception) {
-                inputStream = con.getErrorStream();
-            }
-
-            InputStreamReader reader = new InputStreamReader(inputStream);
-            BufferedReader streamReader = new BufferedReader(reader);
-
-            JsonElement response = (new JsonParser().parse(streamReader)).getAsJsonObject().get("response");
-            if (response.getAsJsonObject().get("status").getAsInt() == 403)
-                throw new AccessDeniedException(
-                        "You don't have enough permissions to view user '" + user + "' or this user doesn't exist.");
-
-            JsonArray data = response.getAsJsonObject().get("data").getAsJsonArray();
-
-            streamReader.close();
-            reader.close();
-            return data.get(0).getAsJsonObject();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    private String getField(JsonObject object, String field) {
-        if (object.get(field).isJsonNull())
-            return null;
-        return object.get(field).getAsString();
     }
 }
