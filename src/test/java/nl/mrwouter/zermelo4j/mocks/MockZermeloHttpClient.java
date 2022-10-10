@@ -11,6 +11,8 @@ import java.util.Map;
 
 public class MockZermeloHttpClient extends ZermeloHttpClient {
 
+    private JsonObject lastResponse;
+
     /**
      * Make a GET request to the Zermelo API
      * @param endpoint API endpoint (i.e. /appointments)
@@ -22,8 +24,8 @@ public class MockZermeloHttpClient extends ZermeloHttpClient {
      */
     public HttpResponse<String> get(String endpoint, String school, String accessToken, Map<String, String> parameters)
             throws ZermeloApiException {
-        JsonObject response = generateDataForEndpoint(endpoint, parameters);
-        return new MockHttpResponse(200, response.getAsString());
+        this.lastResponse = generateDataForEndpoint(endpoint, parameters);
+        return new MockHttpResponse(200, this.lastResponse.toString());
     }
 
     /**
@@ -37,8 +39,12 @@ public class MockZermeloHttpClient extends ZermeloHttpClient {
      */
     public HttpResponse<String> post(String endpoint, String school, String accessToken, Map<String, String> parameters)
             throws ZermeloApiException {
-        JsonObject response = generateDataForEndpoint(endpoint, parameters);
-        return new MockHttpResponse(200, response.toString());
+        this.lastResponse = generateDataForEndpoint(endpoint, parameters);
+        return new MockHttpResponse(200, this.lastResponse.toString());
+    }
+
+    public JsonObject lastResponse() {
+        return this.lastResponse;
     }
 
     public JsonObject generateDataForEndpoint(String endpoint, Map<String, String> parameters) {
