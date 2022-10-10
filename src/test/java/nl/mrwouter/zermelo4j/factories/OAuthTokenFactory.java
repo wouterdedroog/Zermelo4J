@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 
 import java.util.Map;
 
-public class OAuthTokenFactory implements ApiFactory {
+public class OAuthTokenFactory extends ApiFactory {
 
     @Override
     public JsonObject getData(Map<String, String> parameters) {

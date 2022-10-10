@@ -1,11 +1,12 @@
 package nl.mrwouter.zermelo4j;
 
 import nl.mrwouter.zermelo4j.factories.ApiFactory;
+import nl.mrwouter.zermelo4j.factories.AppointmentParticipationFactory;
 import nl.mrwouter.zermelo4j.factories.OAuthTokenFactory;
 
 public enum ApiEndpoint {
     OAUTH_TOKEN("/oauth/token", new OAuthTokenFactory()),
-    APPOINTMENT_PARTICIPATIONS("/appointmentparticipations", null),
+    APPOINTMENT_PARTICIPATIONS("/appointmentparticipations", new AppointmentParticipationFactory()),
     APPOINTMENTS("/appointments", null),
     ANNOUNCEMENTS("/announcements", null),
     USER("/users/", null);
