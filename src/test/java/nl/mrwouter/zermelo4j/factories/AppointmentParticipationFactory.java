@@ -21,8 +21,8 @@ public class AppointmentParticipationFactory extends ApiFactory {
         responseObject.addProperty("details", "");
         responseObject.addProperty("eventId", 0);
         responseObject.addProperty("startRow", 0);
-        responseObject.addProperty("endRow", 3);
-        responseObject.addProperty("totalRows", 3);
+        responseObject.addProperty("endRow", Arrays.stream(AppointmentType.values()).count());
+        responseObject.addProperty("totalRows", Arrays.stream(AppointmentType.values()).count());
         responseObject.add("data", generateAppointmentParticipations());
 
         jsonObject.add("response", responseObject);
