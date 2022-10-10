@@ -23,7 +23,7 @@ public class AppointmentParticipationTest {
     MockZermeloHttpClient zermeloHttpClient = new MockZermeloHttpClient();
 
     @Test
-    @DisplayName("Can parse Appointment Participations")
+    @DisplayName("Can parse appointment participations")
     void testCanParseAppointmentParticipations() throws ZermeloApiException {
         Faker faker = new Faker();
         ZermeloAPI zermeloAPI = ZermeloAPI.getAPI("test", faker.regexify("[a-z0-9]{26}"), zermeloHttpClient);
