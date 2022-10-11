@@ -27,7 +27,7 @@ public class AnnouncementTest {
 
         JsonObject firstJson = zermeloHttpClient.lastResponse().get("response").getAsJsonObject() // get response object
                 .get("data").getAsJsonArray() // get data array
-                .get(0).getAsJsonObject(); // get first appointment participation
+                .get(0).getAsJsonObject(); // get first announcement
 
         Announcement first = announcements.stream()
                 .findFirst()

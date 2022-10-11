@@ -7,7 +7,7 @@ public enum ApiEndpoint {
     APPOINTMENT_PARTICIPATIONS("/appointmentparticipations", new AppointmentParticipationFactory()),
     APPOINTMENTS("/appointments", new AppointmentFactory()),
     ANNOUNCEMENTS("/announcements", new AnnouncementFactory()),
-    USER("/users/", null);
+    USER("/users/", new UserFactory());
 
     private final String endpoint;
     private final ApiFactory apiFactory;
