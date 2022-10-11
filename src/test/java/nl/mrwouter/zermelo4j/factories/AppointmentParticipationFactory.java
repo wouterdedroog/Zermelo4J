@@ -13,8 +13,6 @@ public class AppointmentParticipationFactory extends ApiFactory {
 
     @Override
     public JsonObject getData(Map<String, String> parameters) {
-        Faker faker = new Faker();
-        JsonObject jsonObject = new JsonObject();
         JsonObject responseObject = new JsonObject();
         responseObject.addProperty("status", 200);
         responseObject.addProperty("message", "");
@@ -25,6 +23,7 @@ public class AppointmentParticipationFactory extends ApiFactory {
         responseObject.addProperty("totalRows", Arrays.stream(AppointmentType.values()).count());
         responseObject.add("data", generateAppointmentParticipations());
 
+        JsonObject jsonObject = new JsonObject();
         jsonObject.add("response", responseObject);
         return jsonObject;
     }

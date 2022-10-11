@@ -16,6 +16,7 @@ public class Appointment extends AppointmentParticipation {
     private final boolean modified;
     private final boolean moved;
     private final boolean isNew;
+    private final boolean isOptional;
 
     /**
      * Create an Appointment from a provided JsonObject
@@ -27,6 +28,7 @@ public class Appointment extends AppointmentParticipation {
         this.modified = appointmentObject.get("modified").getAsBoolean();
         this.moved = appointmentObject.get("moved").getAsBoolean();
         this.isNew = appointmentObject.get("new").getAsBoolean();
+        this.isOptional = appointmentObject.get("optional").getAsBoolean();
     }
 
     /**
@@ -70,6 +72,15 @@ public class Appointment extends AppointmentParticipation {
     }
 
     /**
+     * Check if the appointment is optional
+     *
+     * @return true if appointment is optional
+     */
+    public boolean isOptional() {
+        return isOptional;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -79,6 +90,7 @@ public class Appointment extends AppointmentParticipation {
         appointment.addProperty("modified", this.isModified());
         appointment.addProperty("moved", this.isMoved());
         appointment.addProperty("new", this.isNew());
+        appointment.addProperty("optional", this.isOptional());
         return appointment;
     }
 }
