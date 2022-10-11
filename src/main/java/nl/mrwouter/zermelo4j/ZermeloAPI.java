@@ -267,6 +267,6 @@ public class ZermeloAPI {
                 data.get("isApplicationManager").getAsBoolean(), data.get("isStudent").getAsBoolean(), data.get("isEmployee").getAsBoolean(),
                 data.get("isFamilyMember").getAsBoolean(), data.get("isSchoolScheduler").getAsBoolean(), data.get("isSchoolLeader").getAsBoolean(),
                 data.get("isStudentAdministrator").getAsBoolean(), data.get("isTeamLeader").getAsBoolean(), data.get("isSectionLeader").getAsBoolean(),
-                data.get("isMentor").getAsBoolean(), data.get("isDean").getAsBoolean());
+                data.get("isMentor").getAsBoolean(), data.get("isParentTeacherNightScheduler").getAsBoolean(), data.get("isDean").getAsBoolean());
     }
 }

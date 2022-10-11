@@ -47,7 +47,7 @@ public class UserTest {
         assertEquals(user.isTeamLeader(), firstJson.get("isTeamLeader").getAsBoolean());
         assertEquals(user.isSectionLeader(), firstJson.get("isSectionLeader").getAsBoolean());
         assertEquals(user.isMentor(), firstJson.get("isMentor").getAsBoolean());
-//        assertEquals(user.isParentTeacherNightScheduler(), firstJson.get("isParentTeacherNightScheduler").getAsBoolean());
+        assertEquals(user.isParentTeacherNightScheduler(), firstJson.get("isParentTeacherNightScheduler").getAsBoolean());
         assertEquals(user.isDean(), firstJson.get("isDean").getAsBoolean());
 
     }

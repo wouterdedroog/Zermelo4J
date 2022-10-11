@@ -21,6 +21,7 @@ public class User {
     private final boolean isTeamLeader;
     private final boolean isSectionLeader;
     private final boolean isMentor;
+    private final boolean isParentTeacherNightScheduler;
     private final boolean isDean;
 
     /**
@@ -46,7 +47,7 @@ public class User {
     public User(String user, String firstName, String lastName, String prefix, boolean isArchived, boolean hasPassword,
                 boolean isApplicationManager, boolean isStudent, boolean isEmployee, boolean isFamilyMember,
                 boolean isSchoolScheduler, boolean isSchoolLeader, boolean isStudentAdministrator, boolean isTeamLeader,
-                boolean isSectionLeader, boolean isMentor, boolean isDean) {
+                boolean isSectionLeader, boolean isMentor, boolean isParentTeacherNightScheduler, boolean isDean) {
         this.user = user;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -64,6 +65,7 @@ public class User {
         this.isTeamLeader = isTeamLeader;
         this.isSectionLeader = isSectionLeader;
         this.isMentor = isMentor;
+        this.isParentTeacherNightScheduler = isParentTeacherNightScheduler;
         this.isDean = isDean;
     }
 
@@ -209,6 +211,15 @@ public class User {
      */
     public boolean isMentor() {
         return isMentor;
+    }
+
+    /**
+     * Get whether the user is a parent-teacher night scheduler
+     *
+     * @return whether the user is a parent-teacher night scheduler
+     */
+    public boolean isParentTeacherNightScheduler() {
+        return isParentTeacherNightScheduler;
     }
 
     /**
