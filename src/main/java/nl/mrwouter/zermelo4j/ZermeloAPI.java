@@ -250,7 +250,6 @@ public class ZermeloAPI {
     public User getUser(String user) throws ZermeloApiException {
         HttpResponse<String> httpResponse = this.getZermeloHttpClient().get("/users/" + user, this.getSchool(), this.getAccessToken(), Collections.emptyMap());
         JsonElement root = JsonParser.parseString(httpResponse.body());
-        System.out.println(root);
         JsonObject responseObject = root.getAsJsonObject().get("response").getAsJsonObject();
         JsonObject data = responseObject.get("data").getAsJsonArray().get(0).getAsJsonObject();
 
@@ -264,7 +263,7 @@ public class ZermeloAPI {
                 ? data.get("prefix").getAsString()
                 : null;
 
-        return new User(user, firstName, lastName, prefix, data.get("archived").getAsBoolean(), data.get("hasPassword").getAsBoolean(),
+        return new User(data.get("code").getAsString(), firstName, lastName, prefix, data.get("archived").getAsBoolean(), data.get("hasPassword").getAsBoolean(),
                 data.get("isApplicationManager").getAsBoolean(), data.get("isStudent").getAsBoolean(), data.get("isEmployee").getAsBoolean(),
                 data.get("isFamilyMember").getAsBoolean(), data.get("isSchoolScheduler").getAsBoolean(), data.get("isSchoolLeader").getAsBoolean(),
                 data.get("isStudentAdministrator").getAsBoolean(), data.get("isTeamLeader").getAsBoolean(), data.get("isSectionLeader").getAsBoolean(),

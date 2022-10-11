@@ -1,6 +1,5 @@
 package nl.mrwouter.zermelo4j.appointments;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
