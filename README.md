@@ -2,7 +2,7 @@
 A simple Java API Wrapper for the Zermelo API
 
 ## Documentation
-https://docs.mrwouter.nl/zermelo4j/
+All functions have javadoc comments
 
 ## Using Zermelo4J with Maven.
 Add this repository
